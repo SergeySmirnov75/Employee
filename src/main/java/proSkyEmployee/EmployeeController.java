@@ -5,55 +5,54 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import proSkyEmployee.exeptions.EmployeeException;
+import proSkyEmployee.exeptions.EmployeeAlreadyAddedException;
+import proSkyEmployee.exeptions.EmployeeNotFoundException;
+import proSkyEmployee.exeptions.EmployeeStorageIsFullException;
+
+import java.util.Set;
 @RestController
-@RequestMapping("/calculator")
-public class EmployeeController
-{
+@RequestMapping("/Employee")
+public class EmployeeController {
+
     private final EmployeeService employeeService;
 
-    public EmployeeController(EmployeeService employeeService)
-    {
+    public EmployeeController(EmployeeService employeeService) {
         this.employeeService = employeeService;
     }
 
-
-    @GetMapping
-    public String hello()
-    {
-        return "hello";
+    @GetMapping("/all")
+    public Set<Employee> getAllEmployees() {
+        return employeeService.getAllEmployees();
     }
 
-    @GetMapping(path = "/hello")
-    public String answerHello(@RequestParam("name") String userName)
-    {
-        return "<b>hello</b>" + userName;
+    @GetMapping("/add")
+    public Employee addEmployee(@RequestParam() String firstName,
+                                @RequestParam() String lastName) {
+        try {
+            return employeeService.addEmployee(firstName, lastName);
+        } catch (EmployeeAlreadyAddedException | EmployeeStorageIsFullException e) {
+            throw new EmployeeException("Ошибка обработки сотрудника: " + e.getMessage());
+        }
     }
 
-
-    @RequestMapping(path = "/")
-    public String answerEmployee()
-    {
-        return "Добро пожаловать в калькулятор!";
+    @GetMapping("/remove")
+    public Employee removeEmployee(@RequestParam() String firstName,
+                                   @RequestParam() String lastName) {
+        try {
+            return employeeService.removeEmployee(firstName, lastName);
+        } catch (EmployeeNotFoundException e) {
+            throw new EmployeeException("Ошибка обработки сотрудника: " + e.getMessage());
+        }
     }
 
-
-    @RequestMapping(path = "/add")
-    public String addEmployee(@RequestParam("firstName") String firstName, @RequestParam("lastName") String lastName)
-    {
-        return employeeService.addEmployee(firstName, lastName);
+    @GetMapping("/find")
+    public Employee findEmployee(@RequestParam() String firstName,
+                                 @RequestParam() String lastName) {
+        try {
+            return employeeService.findEmployee(firstName, lastName);
+        } catch (EmployeeNotFoundException e) {
+            throw new EmployeeException("Ошибка обработки сотрудника: " + e.getMessage());
+        }
     }
-
-    @RequestMapping(path = "/remove")
-    public String deleteEmployee(@RequestParam("firstName") String firstName, @RequestParam("lastName") String lastName)
-    {
-        return employeeService.deleteEmployee(firstName, lastName);
-    }
-
-    @RequestMapping(path = "/find")
-    public String findEmployee(@RequestParam("firstName") String firstName, @RequestParam("lastName") String lastName)
-    {
-        return employeeService.findEmployee(firstName, lastName);
-    }
-
-
 }
